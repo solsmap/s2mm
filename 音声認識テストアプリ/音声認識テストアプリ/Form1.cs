@@ -8,11 +8,18 @@ using System.Speech.Recognition;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using NAudio;
+using NAudio.Wave;
 
 namespace 音声認識テストアプリ
 {
     public partial class Form1 : Form
     {
+        private WaveIn _waveIn = null;
+        WatsonStreamAdapter _adapter = null;
+
+        private int _resultIndex = -1;
+
         public Form1()
         {
             InitializeComponent();
@@ -107,6 +114,54 @@ namespace 音声認識テストアプリ
         private void button7_Click(object sender, System.EventArgs e)
         {
             MMFrame.Media.SpeechRecognition.ClearGrammar();
+        }
+
+        /// <summary>
+        /// Watson音声認識開始
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button8_Click(object sender, EventArgs e)
+        {
+            _adapter = new WatsonStreamAdapter();
+            Task.Run(_adapter.ConnectAsync);
+
+            _waveIn = new WaveIn()
+            {
+                DeviceNumber = 0, // Default
+            };
+            _waveIn.DataAvailable += WaveIn_DataAvailable;
+            _waveIn.WaveFormat = new WaveFormat(sampleRate: 16000, channels: 1);
+            _waveIn.StartRecording();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            for (int i = 0; i < WaveIn.DeviceCount; i++)
+            {
+                var deviceInfo = WaveIn.GetCapabilities(i);
+                textBox1.Text = String.Format("音声入力デバイス {0}: {1}, {2} チャンネル\r\n", i, deviceInfo.ProductName, deviceInfo.Channels) + textBox1.Text;
+            }
+        }
+
+        private void WaveIn_DataAvailable(object sender, WaveInEventArgs e)
+        {
+            if (WatsonStreamAdapter.IsListening == true)
+            {
+                Task.Run(async () => { await _adapter.SendAsync(e.Buffer, e.BytesRecorded); });
+                WatsonStreamAdapter.TranscriptEvent += CallbackTranscript;
+            }
+        }
+
+        private void CallbackTranscript(object sender, EventArgsTranscript e)
+        {
+            this.Invoke((MethodInvoker)(() => {
+                if(e.ResultIndex != _resultIndex)
+                {
+                    textBox1.Text = String.Format("解析：{0}\r\n", e.Transcript) + textBox1.Text;
+                    _resultIndex = e.ResultIndex;
+                }
+            }));
         }
     }
 }

@@ -37,6 +37,7 @@
             this.button6 = new System.Windows.Forms.Button();
             this.button7 = new System.Windows.Forms.Button();
             this.textBox2 = new System.Windows.Forms.TextBox();
+            this.button8 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // textBox1
@@ -125,11 +126,22 @@
             this.textBox2.TabIndex = 8;
             this.textBox2.Text = "こんにちは";
             // 
+            // button8
+            // 
+            this.button8.Location = new System.Drawing.Point(12, 363);
+            this.button8.Name = "button8";
+            this.button8.Size = new System.Drawing.Size(175, 23);
+            this.button8.TabIndex = 9;
+            this.button8.Text = "Watson音声認識";
+            this.button8.UseVisualStyleBackColor = true;
+            this.button8.Click += new System.EventHandler(this.button8_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(695, 398);
+            this.Controls.Add(this.button8);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.button7);
             this.Controls.Add(this.button6);
@@ -141,6 +153,7 @@
             this.Controls.Add(this.textBox1);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -157,6 +170,7 @@
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Button button8;
     }
 }
 
