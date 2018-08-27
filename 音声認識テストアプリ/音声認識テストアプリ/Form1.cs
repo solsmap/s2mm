@@ -39,6 +39,11 @@ namespace 音声認識テストアプリ
             MMFrame.Media.SpeechRecognition.SpeechRecognizedEvent = (e) =>
             {
                 textBox1.Text = "確定：" + e.Result.Grammar.Name + " " + e.Result.Text + "(" + e.Result.Confidence + ")" + "\r\n" + textBox1.Text;
+                if(e.Result.Text == textBox2.Text)
+                {
+                    MMFrame.Media.SpeechRecognition.RecognizeAsyncCancel();
+                    button8_Click(this, e);
+                }
             };
 
             MMFrame.Media.SpeechRecognition.SpeechHypothesizedEvent = (e) =>
@@ -55,6 +60,12 @@ namespace 音声認識テストアプリ
 
                 textBox1.Text = "認識終了" + "\r\n" + textBox1.Text;
             };
+
+            MMFrame.Media.SpeechRecognition.CreateEngine("MS-1041-80-DESK");
+
+            AddGrammar();
+
+            MMFrame.Media.SpeechRecognition.RecognizeAsync(true);
         }
 
         private void AddGrammar()
@@ -131,7 +142,7 @@ namespace 音声認識テストアプリ
                 DeviceNumber = 0, // Default
             };
             _waveIn.DataAvailable += WaveIn_DataAvailable;
-            _waveIn.WaveFormat = new WaveFormat(sampleRate: 16000, channels: 1);
+            _waveIn.WaveFormat = new WaveFormat(sampleRate: 44100, channels: 1);
             _waveIn.StartRecording();
         }
 
@@ -160,6 +171,11 @@ namespace 音声認識テストアプリ
                 {
                     textBox1.Text = String.Format("解析：{0}\r\n", e.Transcript) + textBox1.Text;
                     _resultIndex = e.ResultIndex;
+                }
+
+                if(_resultIndex == -1)
+                {
+                    MMFrame.Media.SpeechRecognition.RecognizeAsync(true);
                 }
             }));
         }

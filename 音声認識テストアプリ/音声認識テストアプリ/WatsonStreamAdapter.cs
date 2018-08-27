@@ -39,6 +39,7 @@ namespace 音声認識テストアプリ
         public List<Result> results { get; set; }
         public int result_index { get; set; }
         public List<string> warnings { get; set; }
+        public string error { get; set; }
     }
 
     public delegate void TranscriptEventHandler(object sender, EventArgsTranscript e);
@@ -55,7 +56,7 @@ namespace 音声認識テストアプリ
 
         private static readonly Uri AuthEndpointUri = new Uri(@"https://stream.watsonplatform.net/authorization/api/v1/token?url=https://stream.watsonplatform.net/speech-to-text/api");
 
-        private static readonly ArraySegment<byte> OpenMessage = new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"action\": \"start\", \"content-type\": \"audio/l16;rate=22050\", \"continuous\" : true, \"interim_results\": true}"));
+        private static readonly ArraySegment<byte> OpenMessage = new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"action\": \"start\", \"content-type\": \"audio/l16;rate=44100\", \"continuous\" : true, \"interim_results\": true, \"inactivity_timeout\": 5 }"));
         private static readonly ArraySegment<byte> CloseMessage = new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"action\": \"stop\"}"));
 
         private ClientWebSocket _socket = new ClientWebSocket();
@@ -141,6 +142,12 @@ namespace 音声認識テストアプリ
                 }
                 else
                 {
+                    if(JsonConvert.DeserializeObject<RootObject>(message).error != null)
+                    {
+                        TranscriptEvent(null, new EventArgsTranscript(JsonConvert.DeserializeObject<RootObject>(message).error, -1));
+                        await socket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "終了", CancellationToken.None);
+                        return;
+                    }
                     //T.B.D 何故か配列で来るので、とりあえず０番目を参照・・・
                     //イベント登録あり、解析文字列が１文字以上、最終結果のみ
                     if (TranscriptEvent != null && JsonConvert.DeserializeObject<RootObject>(message).results[0].alternatives[0].transcript.Length > 0 &&
